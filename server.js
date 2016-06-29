@@ -7,7 +7,7 @@ var PORT = process.env.PORT || 3000;
 
 // add a root directory with text To Do API Root
 app.get('/', function (req, res) {
-	res.send('To Do API root');
+	res.send('To Do API root page');
 });
 
 // starting webserver and console.log text with server runnig message

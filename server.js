@@ -1,8 +1,10 @@
-
 // import express module
 var express = require('express');
 // import bodyParser middleware = "software glue"
 var bodyParser = require('body-parser');
+// import underscore (strange sign)
+var _ = require('underscore');
+
 var app = express();
 // make PORT variable heroku ready
 var PORT = process.env.PORT || 3000;
@@ -28,14 +30,17 @@ app.get('/todos', function (req, res) {
 app.get('/todos/:id', function( req, res) {
 	// store the todoId and converting string to a number to (10 system)
 	var todoId = parseInt(req.params.id, 10);
-	var matchedTodo;
+	// refactorin the code with underscore.js
+	//findWhere returns only one argument from array(FIRST)
+	var matchedTodo = _.findWhere(todos, {id: todoId});
+	/* var matchedTodo;
 	// with array we are checking if passed id eqal to id
 	todos.forEach(function (todo) {
 		if (todoId === todo.id) {
 			matchedTodo = todo;
 		}
 	});
-	
+	*/
 	if (matchedTodo) {
 		res.json(matchedTodo);
 	} else {
@@ -47,8 +52,14 @@ app.get('/todos/:id', function( req, res) {
 
 // POST /todos/:id
 app.post('/todos', function (req, res) {
-	// create variable 
-	var body = req.body;
+	// create variable, which 
+	var body = _.pick(req.body, 'description', 'completed');
+	
+	if (!_.isBoolean(body.completed) || !_.isString(body.description) || body.description.trim().length === 0) {
+		return res.status(400).send();
+	}
+	// prevents todo from entering 'only spaces' data
+	body.description = body.description.trim();
 	
 	// add id field
 	body.id = todoNextId;

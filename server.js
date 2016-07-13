@@ -21,9 +21,18 @@ app.get('/', function (req, res) {
 	res.send('To Do API root page');
 });
 
-// GET /todos
+// GET /todos?completed=true
 app.get('/todos', function (req, res) {
-	res.json(todos);
+	var queryParams = req.query;
+	var filteredTodos = todos;
+	
+	if (queryParams.hasOwnProperty('completed') && queryParams.completed === 'true') {
+		filteredTodos = _.where(filteredTodos, {completed: true});
+	} else if (queryParams.hasOwnProperty('completed') && queryParams.completed === 'false') {
+		filteredTodos = _.where(filteredTodos, {completed: false});
+	}
+	
+	res.json(filteredTodos);
 });
 
 // GET /todos/:id
@@ -116,7 +125,7 @@ app.put('/todos/:id', function(req, res) {
 	
 })
 
-
+// ? that something after is a query parameters = set of key/value pairs
 
 // starting webserver and console.log text with server runnig message
 app.listen(PORT, function(req, res) {

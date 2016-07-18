@@ -4,6 +4,9 @@ var express = require('express');
 var bodyParser = require('body-parser');
 // import underscore (strange sign)
 var _ = require('underscore');
+// import db.js file with database
+var db = require('./db.js');
+
 
 var app = express();
 // make PORT variable heroku ready
@@ -70,34 +73,11 @@ app.post('/todos', function (req, res) {
 	// create variable, which 
 	var body = _.pick(req.body, 'description', 'completed');
 	
-	if (!_.isBoolean(body.completed) || !_.isString(body.description) || body.description.trim().length === 0) {
-		return res.status(400).send();
-	}
-	// prevents todo from entering 'only spaces' data
-	body.description = body.description.trim();
-	
-	// add id field
-	body.id = todoNextId;
-	todoNextId++;
-	// push body into array
-	todos.push(body);
-	
-	console.log('description: ' + body.description);
-	// 
-	res.json(body);
-});
-
-// DELETE /todos/:id
-app.delete('/todos/:id', function (req, res) {
-	var todoId = parseInt(req.params.id, 10);
-	var matchedTodo = _.findWhere(todos, {id: todoId});
-	
-	if (!matchedTodo) {
-		res.status(404).json({"error": "no todo found with this id"});
-	} else {
-		todos = _.without(todos, matchedTodo);
-		res.json(matchedTodo);
-	}
+	db.todo.create(body).then(function (todo) {
+		res.json(todo.toJSON())
+	}, function (e) {
+		res.status(400).json(e);
+	})
 });
 
 // PUT /todos/:id
@@ -129,11 +109,14 @@ app.put('/todos/:id', function(req, res) {
 	_.extend(matchedTodo, validAttributes);
 	res.json(matchedTodo);
 	
+});
+
+db.sequelize.sync().then(function () {
+	// starting webserver and console.log text with server runnig message
+  app.listen(PORT, function(req, res) {
+	  console.log('Express is listening at port ' + PORT + '!');
+  });
 })
 
 // ? that something after is a query parameters = set of key/value pairs
 
-// starting webserver and console.log text with server runnig message
-app.listen(PORT, function(req, res) {
-	console.log('Express is listening at port ' + PORT + '!');
-})

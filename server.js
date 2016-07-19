@@ -45,27 +45,21 @@ app.get('/todos', function (req, res) {
 });
 
 // GET /todos/:id
-app.get('/todos/:id', function( req, res) {
+app.get('/todos/:id', function(req, res) {
 	// store the todoId and converting string to a number to (10 system)
 	var todoId = parseInt(req.params.id, 10);
-	// refactorin the code with underscore.js
-	//findWhere returns only one argument from array(FIRST)
-	var matchedTodo = _.findWhere(todos, {id: todoId});
-	/* var matchedTodo;
-	// with array we are checking if passed id eqal to id
-	todos.forEach(function (todo) {
-		if (todoId === todo.id) {
-			matchedTodo = todo;
-		}
-	});
-	*/
-	if (matchedTodo) {
-		res.json(matchedTodo);
-	} else {
-		res.status(404).send();
-	}
 	
-	res.send('Asking for todo with id of ' + req.params.id)
+	db.todo.findById(todoId).then(function (todo) {
+		// if not a boolean (object, null) first ! flips to false, second to true
+		if (!!todo) {
+			res.json(todo.toJSON());
+		} else {
+			res.status(404).send();
+		}
+	}, function (e) {
+		res.status(500).send();
+	});
+	
 });
 
 // POST /todos/:id

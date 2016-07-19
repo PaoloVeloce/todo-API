@@ -2,7 +2,7 @@ var Sequelize = require('sequelize');
 // for heroku
 var env = process.env.NODE_ENV || 'development';
 // the best way to define a variable which depends on enviroment
-var sequelize:
+var sequelize;
 
 if (env === 'production') {
 	sequelize = new Sequelize(process.env.DATABASE_URL, {

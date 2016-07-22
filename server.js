@@ -119,32 +119,33 @@ app.delete('/todos/:id', function(req,res) {
 
 // PUT /todos/:id
 app.put('/todos/:id', function(req, res) {
-	var todoId = parseInt(req.params.id, 10);	
-	var matchedTodo = _.findWhere(todos, {id: todoId});
+	var todoId = parseInt(req.params.id, 10);
 	var body = _.pick(req.body, 'description', 'completed');
-	var validAttributes = {};
+	var attributes = {};
 	
-	if (!matchedTodo) {
-		return res.status(404).send();
-	}
 	
 	
 	// runs if the 'completed' exiscts and boolean
-	if (body.hasOwnProperty('completed') && _.isBoolean(body.completed)) {
-		validAttributes.completed = body.completed;
-	// runs if exists and not a boolean, so smth went wrong
-	} else if (body.hasOwnProperty('completed')) {
-		return res.status(400).send(); 
-	} 
-	
-	if (body.hasOwnProperty('description') && _.isString(body.description) && body.description.trim().length > 0) {
-		validAttributes.description = body.description;
-	} else if (body.hasOwnProperty('description')) {
-		return res.status(400).send();
+	if (body.hasOwnProperty('completed')) {
+		attributes.completed = body.completed;
+	}	
+	if (body.hasOwnProperty('description')) {
+		attributes.description = body.description;
 	}
 	
-	_.extend(matchedTodo, validAttributes);
-	res.json(matchedTodo);
+	 db.todo.findById(todoId).then(function (todo) {
+		 if (todo) {
+			 return todo.update(attributes).then(function (todo) {
+		       res.json(todo.toJSON());
+	 }, function (e) {
+		 res.status(404).json(e);
+	 });
+		 } else {
+			 res.status(404).send();
+		 }
+	 }, function() {
+		 res.status(500).send();
+	 });
 	
 });
 

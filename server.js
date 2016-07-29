@@ -149,7 +149,19 @@ app.put('/todos/:id', function(req, res) {
 	
 });
 
-db.sequelize.sync().then(function () {
+// POST /users
+app.post('/users', function (req, res) {
+	var body = _.pick(req.body, 'email', 'password');
+	
+	db.user.create(body).then(function (user) {
+		res.json(user.toJSON());
+	}, function(err) {
+		res.status(400).json(err);
+	});
+});
+
+
+db.sequelize.sync().then(function (user) {
 	// starting webserver and console.log text with server runnig message
   app.listen(PORT, function(req, res) {
 	  console.log('Express is listening at port ' + PORT + '!');

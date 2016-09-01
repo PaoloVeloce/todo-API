@@ -6,6 +6,8 @@ var bodyParser = require('body-parser');
 var _ = require('underscore');
 // import db.js file with database
 var db = require('./db.js');
+// import bcrypt-nodejs
+var bcrypt = require('bcrypt-nodejs');
 
 
 var app = express();
@@ -157,6 +159,31 @@ app.post('/users', function (req, res) {
 		res.json(user.toPublicJSON());
 	}, function(err) {
 		res.status(400).json(err);
+	});
+});
+
+// POST users/login
+app.post('/users/login', function (req, res) {
+	var body = _.pick(req.body, 'email', 'password');
+	
+	// validation semplice
+	if (typeof body.email !== 'string' || typeof body.password !== 'string') {
+		return res.status(400).send();
+	}
+	// checking if email matches request
+	db.user.findOne({
+		where: {
+			email: body.email
+		}
+	}).then(function (user) {
+		// comparing passwords with bcrypt !!! FLIPPING ))
+		if (!user || !bcrypt.compareSync(body.password, user.get('password_hash'))) {
+			return res.status(401).send(); // auth is possible but failed
+		}
+		// just to be in touch with hiding password for	
+		res.json(user.toPublicJSON());
+	}, function (e) {
+		res.status(500).send();
 	});
 });
 

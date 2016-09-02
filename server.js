@@ -166,29 +166,16 @@ app.post('/users', function (req, res) {
 app.post('/users/login', function (req, res) {
 	var body = _.pick(req.body, 'email', 'password');
 	
-	// validation semplice
-	if (typeof body.email !== 'string' || typeof body.password !== 'string') {
-		return res.status(400).send();
-	}
-	// checking if email matches request
-	db.user.findOne({
-		where: {
-			email: body.email
-		}
-	}).then(function (user) {
-		// comparing passwords with bcrypt !!! FLIPPING ))
-		if (!user || !bcrypt.compareSync(body.password, user.get('password_hash'))) {
-			return res.status(401).send(); // auth is possible but failed
-		}
-		// just to be in touch with hiding password for	
+	db.user.authenticate(body).then(function (user) {
 		res.json(user.toPublicJSON());
-	}, function (e) {
-		res.status(500).send();
+	}, function () {
+		res.status(401).send();
 	});
+	
 });
 
 
-db.sequelize.sync().then(function (user) {
+db.sequelize.sync({force: true}}).then(function (user) {
 	// starting webserver and console.log text with server runnig message
   app.listen(PORT, function(req, res) {
 	  console.log('Express is listening at port ' + PORT + '!');
